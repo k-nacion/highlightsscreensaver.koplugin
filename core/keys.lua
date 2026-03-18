@@ -9,6 +9,7 @@ K.NAMESPACE = "highlights_screensaver_"
 -- KOReader default screensaver keys
 ------------------------------------------------------------
 K.koreader = {
+    screensaver_type = "screensaver_type",
     screensaver = {
         show_message = "screensaver_show_message", -- Show or hide text entirely
         message = "screensaver_message", -- Main sleep message
@@ -72,7 +73,7 @@ K.notes = {
         limit = "show_notes_limit",
     },
 }
-K.screensaver_type = "screensaver_type"
+
 K.display = {
     orientation = "highlights_orientation",
 }

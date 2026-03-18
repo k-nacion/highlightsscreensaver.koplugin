@@ -32,10 +32,10 @@ local function patchDofileMenus()
                     text = _("Show highlights screensaver"),
                     radio = true,
                     checked_func = function()
-                        return config.read(K.screensaver_type) == HIGHLIGHTS_MODE
+                        return config.read(K.koreader.screensaver_type) == HIGHLIGHTS_MODE
                     end,
                     callback = function()
-                        config.write(K.screensaver_type, HIGHLIGHTS_MODE)
+                        config.write(K.koreader.screensaver_type, HIGHLIGHTS_MODE)
                     end,
                 })
             end

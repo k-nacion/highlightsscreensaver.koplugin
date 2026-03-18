@@ -52,22 +52,17 @@ M.defaults = {
 
 -- Hybrid read
 function M.read(key, default)
-    -- Check if the key belongs to KOReader defaults
     local is_koreader_key = false
     for _, section in pairs(K.koreader) do
-        if type(section) == "table" then   -- <-- add this check
+        if type(section) == "table" then
             for _, k in pairs(section) do
-                if k == key then
-                    is_koreader_key = true
-                    break
-                end
+                if k == key then is_koreader_key = true break end
             end
+        elseif section == key then
+            is_koreader_key = true  -- <-- add this
         end
-        if is_koreader_key then
-            break
-        end
+        if is_koreader_key then break end
     end
-
 
     if is_koreader_key then
         return G_reader_settings:readSetting(key, default or M.defaults[key])
