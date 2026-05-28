@@ -1,4 +1,13 @@
-local Blitbuffer = require("ffi/blitbuffer")
+--[[
+    Screensaver Display
+    ===================
+    Builds the full-screen highlight widget shown when the screensaver
+    activates in "highlights" mode. Composes:
+      - ui/theme_helpers    (color resolution)
+      - ui/message_widget   (optional message overlay)
+    
+    Auto-shrinks font size until content fits within 95% of screen height.
+]]
 local CenterContainer = require("ui/widget/container/centercontainer")
 local Font = require("ui/font")
 local Geom = require("ui/geometry")
@@ -12,162 +21,22 @@ local VerticalSpan = require("ui/widget/verticalspan")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
 local LineWidget = require("ui/widget/linewidget")
-local FrameContainer = require("ui/widget/container/framecontainer")
 local OverlapGroup = require("ui/widget/overlapgroup")
 local BottomContainer = require("ui/widget/container/bottomcontainer")
 
 local config = require("core.config")
 local K = require("core.keys")
+local themeHelpers = require("ui.theme_helpers")
+local messageWidget = require("ui.message_widget")
 
 local M = {}
 
 ----------------------------------------------------------------
--- Defensive helpers
+-- Notes configuration
 ----------------------------------------------------------------
-local function readNumber(key, default)
-    local v = config.read(key, default)
-    if type(v) ~= "number" then
-        return default
-    end
-    return v
-end
 
-local function clamp(v, min, max)
-    if v < min then
-        return min
-    end
-    if v > max then
-        return max
-    end
-    return v
-end
-
-----------------------------------------------------------------
--- Theme helpers
-----------------------------------------------------------------
-local function getThemeColors()
-    local theme = config.getTheme()
-    local is_night_mode = G_reader_settings:isTrue(K.koreader.is_night_mode) -- hybrid read example
-
-    if theme == config.Theme.SYSTEM then
-        return Blitbuffer.COLOR_BLACK, Blitbuffer.COLOR_WHITE
-    elseif (theme == config.Theme.DARK and not is_night_mode)
-            or (theme == config.Theme.LIGHT and is_night_mode) then
-        return Blitbuffer.COLOR_WHITE, Blitbuffer.COLOR_BLACK
-    else
-        return Blitbuffer.COLOR_BLACK, Blitbuffer.COLOR_WHITE
-    end
-end
-
-local function styleTextWidget(textw)
-    local font_size = config.read(K.screensaver_message.layout.font_size)
-    local line_height = config.read(K.screensaver_message.layout.line_spacing)
-    local alignment = config.read(K.screensaver_message.layout.alignment) or "center"
-
-    textw.line_height = line_height
-    textw.alignment = alignment
-
-    if textw.face and textw.face.family then
-        textw.face = Font:getFace(textw.face.family, font_size)
-    end
-
-    return textw
-end
-
-----------------------------------------------------------------
--- Screensaver message containers
-----------------------------------------------------------------
-local function buildBoxMessage(textw)
-    local textbw = styleTextWidget(textw)
-    return FrameContainer:new {
-        background = Blitbuffer.COLOR_WHITE,
-        bordersize = Size.border.default,
-        padding = readNumber(K.screensaver_message.layout.padding, Size.padding.large),
-        margin = readNumber(K.screensaver_message.layout.margin, Size.margin.default),
-        textbw,
-    }
-end
-
-local function buildBannerMessage(textw, highlight_width, fgcolor)
-    local textbw = styleTextWidget(textw)
-
-    local width_mode = config.read(K.screensaver_message.width.mode)
-    local custom_width = config.read(K.screensaver_message.width.custom_mode)
-
-    local banner_width
-    if width_mode == "viewport" then
-        banner_width = Screen:getWidth()
-    elseif width_mode == "message_content" then
-        banner_width = textbw:getSize().w
-    elseif width_mode == "custom" then
-        if type(custom_width) ~= "number" or custom_width == math.huge or custom_width ~= custom_width then
-            banner_width = Screen:getWidth()
-        else
-            banner_width = custom_width
-        end
-    else
-        banner_width = highlight_width or Screen:getWidth() * 0.9
-    end
-
-    local padding = readNumber(K.screensaver_message.layout.padding, Size.padding.large)
-    local margin = readNumber(K.screensaver_message.layout.margin, Size.margin.default)
-
-    local banner_content = VerticalGroup:new {
-        LineWidget:new {
-            dimen = Geom:new { w = banner_width, h = Size.border.default },
-            background = fgcolor,
-        },
-        VerticalSpan:new { width = padding },
-        textbw,
-        VerticalSpan:new { width = padding },
-    }
-
-    return FrameContainer:new {
-        background = Blitbuffer.COLOR_WHITE,
-        bordersize = 0,
-        padding = 0,
-        margin = margin,
-        dimen = { w = banner_width },
-        banner_content,
-    }
-end
-
-----------------------------------------------------------------
--- Screensaver message builder
-----------------------------------------------------------------
-local function buildScreensaverMessageWidget(ui, base_font_size, content_width, fgcolor)
-    if not config.read(K.koreader.screensaver.show_message) then
-        return nil
-    end
-
-    local message = config.read(K.koreader.screensaver.message)
-    if not message or message == "" then
-        return nil
-    end
-
-    if ui and ui.bookinfo then
-        message = ui.bookinfo:expandString(message) or message
-    end
-
-    local textw = TextBoxWidget:new {
-        text = message,
-        face = Font:getFace("infofont", config.read(K.screensaver_message.layout.font_size)),
-        alignment = config.read(K.screensaver_message.layout.alignment) or "center",
-        line_height = config.read(K.screensaver_message.layout.line_spacing),
-    }
-
-    local container_type = config.read(K.koreader.screensaver.container) or "box"
-
-    if container_type == "banner" then
-        return buildBannerMessage(textw, content_width, fgcolor)
-    end
-
-    return buildBoxMessage(textw)
-end
-
-----------------------------------------------------------------
--- Notes configuration (UNCHANGED)
-----------------------------------------------------------------
+--- Build a config table for notes layout, respecting sync-with-highlights toggle.
+--- @return table { text_alignment, line_height, width_percent, font_base, font_min }
 local function getNoteConfig()
     if config.read(K.notes.sync_with_highlights) then
         return {
@@ -188,12 +57,16 @@ local function getNoteConfig()
     end
 end
 
-
 ----------------------------------------------------------------
 -- Main entry
 ----------------------------------------------------------------
+
+--- Build the full screensaver widget for a given highlight clipping.
+--- @param ui table|nil      KOReader UI instance
+--- @param clipping Clipping  The highlight data to display
+--- @return table  ScreenSaverWidget ready for UIManager:show()
 function M.buildHighlightsScreensaverWidget(ui, clipping)
-    local col_fg, col_bg = getThemeColors()
+    local col_fg, col_bg = themeHelpers.getThemeColors()
     local fonts = config.getFonts()
 
     local hs_cfg = getNoteConfig()
@@ -283,6 +156,7 @@ function M.buildHighlightsScreensaverWidget(ui, clipping)
         return content
     end
 
+    -- Auto-shrink font until content fits screen
     local font_size = hs_cfg.font_base
     local content = buildContent(font_size)
     while content:getSize().h > Screen:getHeight() * 0.95 and font_size > hs_cfg.font_min do
@@ -290,10 +164,10 @@ function M.buildHighlightsScreensaverWidget(ui, clipping)
         content = buildContent(font_size)
     end
 
-    local message_widget = buildScreensaverMessageWidget(ui, font_size, content:getSize().w, col_fg)
+    local msg_widget = messageWidget.build(ui, font_size, content:getSize().w, col_fg)
 
     local final_content
-    if message_widget and config.read(K.koreader.screensaver.container) == "banner" then
+    if msg_widget and config.read(K.koreader.screensaver.container) == "banner" then
         final_content = OverlapGroup:new {
             CenterContainer:new {
                 dimen = Screen:getSize(),
@@ -301,11 +175,11 @@ function M.buildHighlightsScreensaverWidget(ui, clipping)
             },
             BottomContainer:new {
                 dimen = Screen:getSize(),
-                message_widget,
+                msg_widget,
             },
         }
     else
-        final_content = VerticalGroup:new { content, message_widget }
+        final_content = VerticalGroup:new { content, msg_widget }
     end
 
     return ScreenSaverWidget:new {

@@ -73,10 +73,10 @@ local function buildMenuShowHighlightNotes()
 				end,
 				keep_menu_open = true,
 				callback = function(touchmenu_instance)
-					local showShortNoteLimitSpin =
-					require("widgets/short_note_limit_spin")
+					local ShortNoteLimitSpin =
+					require("widgets.short_note_limit_spin")
 
-					showShortNoteLimitSpin(
+					ShortNoteLimitSpin.show(
 							config.read(K.notes.option.limit) or 70,
 							function(new_value)
 								config.write(K.notes.option.limit, new_value)

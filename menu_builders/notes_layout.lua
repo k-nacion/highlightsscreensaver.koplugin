@@ -77,7 +77,7 @@ local function buildMenuNotesLayoutOptions()
                 end,
                 keep_menu_open = true,
                 callback = function(touchmenu_instance)
-                    Spin{
+                    Spin.show{
                         title = _("Line spacing"),
                         value = config.read(keys.notes.line_height) or 100,
                         min = 0,
@@ -100,7 +100,7 @@ local function buildMenuNotesLayoutOptions()
                 end,
                 keep_menu_open = true,
                 callback = function(touchmenu_instance)
-                    Spin{
+                    Spin.show{
                         title = _("Base Font Size"),
                         value = config.read(keys.notes.font_size_base) or 48,
                         min = 24,
@@ -123,7 +123,7 @@ local function buildMenuNotesLayoutOptions()
                 end,
                 keep_menu_open = true,
                 callback = function(touchmenu_instance)
-                    Spin{
+                    Spin.show{
                         title = _("Minimum Font Size"),
                         value = config.read(keys.notes.font_size_min) or 12,
                         min = 8,
@@ -146,7 +146,7 @@ local function buildMenuNotesLayoutOptions()
                 end,
                 keep_menu_open = true,
                 callback = function(touchmenu_instance)
-                    Spin{
+                    Spin.show{
                         title = _("Note Width Percentage"),
                         value = config.read(keys.notes.width_percent) or 90,
                         min = 60,

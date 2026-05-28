@@ -8,6 +8,8 @@ local clipper = require("core.clipper")
 local config = require("core.config")
 local utils = require("core.utils")
 
+---@module core.scan
+--- Scans sidecar directories for highlight data and persists clippings.
 local M = {}
 
 ---@param scannable_dirs string[]
@@ -40,6 +42,9 @@ local function getAllSidecarPaths(scannable_dirs)
 	return sidecars
 end
 
+--- Scans all configured scannable directories for highlight sidecar files,
+--- extracts clippings, preserves existing enabled/disabled state, and saves them.
+--- Updates the last-scanned date in config on completion.
 function M.scanHighlights()
 	utils.makeDir(utils.getPluginDir())
 	local scannable_directories = config.getScannableDirectories()
@@ -61,6 +66,8 @@ function M.scanHighlights()
 	config.setLastScannedDate(today)
 end
 
+--- Adds the current FileManager directory to the list of scannable directories
+--- (deduplicating), persists the change, and shows a confirmation popup.
 function M.addToScannableDirectories()
 	local curr_dir = FileManager.instance.file_chooser.path
 	local scannable_directories = config.getScannableDirectories()

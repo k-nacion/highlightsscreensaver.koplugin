@@ -1,7 +1,18 @@
+--[[
+    Short Note Limit Spin Widget
+    =============================
+    Displays a SpinWidget that lets the user set the character limit
+    for "short notes" displayed on the screensaver.
+]]
 local UIManager = require("ui/uimanager")
 local _ = require("gettext")
 
-local function showShortNoteLimitSpin(current_value, onApply)
+local M = {}
+
+--- Show the short-note character-limit spin widget.
+--- @param current_value number|nil  Current limit (defaults to 70)
+--- @param onApply function|nil      Called with new value after confirmation
+function M.show(current_value, onApply)
     local SpinWidget = require("ui/widget/spinwidget")
 
     UIManager:show(SpinWidget:new{
@@ -22,4 +33,4 @@ local function showShortNoteLimitSpin(current_value, onApply)
     })
 end
 
-return showShortNoteLimitSpin
+return M

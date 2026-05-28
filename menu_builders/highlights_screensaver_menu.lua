@@ -1,6 +1,6 @@
 local _ = require("gettext")
 
-local scanMenus = require("menu_builders.scan")
+local scanMenus = require("menu_builders.scan_menu")
 local fontsMenus = require("menu_builders.fonts_menu")
 local themeMenus = require("menu_builders.theme")
 local highlightsMenus = require("menu_builders.highlights_layout")
@@ -8,8 +8,11 @@ local highlightsNotesMenu = require("menu_builders.highlight_notes_menu")
 local importMenus = require("menu_builders.import_quotes_menu")
 local orientationMenus = require("menu_builders.orientation_menu")
 local disableHighlightMenus = require("menu_builders.disable_highlight_menu")
+local toggleCollectionsMenus = require("menu_builders.toggle_collections_menu")
+local quoteOrderMenus = require("menu_builders.quote_order_menu")
 local notesLayoutMenus = require("menu_builders.notes_layout")
 local screensaverMessageMenus = require("menu_builders.sleep_screen_message_menu")
+local versionMenus = require("menu_builders.version_menu")
 
 ------------------------------------------------------------
 -- 📖 Content
@@ -22,6 +25,7 @@ local function buildMenuContent()
             scanMenus.buildMenuAddScannableDirectory(),
             importMenus.buildMenuImportExternalQuotes(),
             disableHighlightMenus.buildMenuDisableHighlight(),
+            toggleCollectionsMenus.buildMenuToggleCollections(),
         },
     }
 end
@@ -61,6 +65,7 @@ local function buildMenuDisplay()
         text = _("Display"),
         sub_item_table = {
             orientationMenus.buildMenuToggleOrientation(),
+            quoteOrderMenus.buildMenuQuoteOrder(),
             screensaverMessageMenus.buildMenuScreensaverMessageOptions(),
         },
     }
@@ -77,6 +82,7 @@ local function buildHighlightsScreensaverMenu()
             buildMenuAppearance(),
             buildMenuLayout(),
             buildMenuDisplay(),
+            versionMenus.buildMenuVersion(),
         },
     }
 end

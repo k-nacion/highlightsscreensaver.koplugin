@@ -76,6 +76,7 @@ K.notes = {
 
 K.display = {
     orientation = "highlights_orientation",
+    quote_order = "highlights_quote_order",
 }
 
 ------------------------------------------------------------

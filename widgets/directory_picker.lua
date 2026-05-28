@@ -1,4 +1,9 @@
--- widgets/directory_picker.lua
+--[[
+    Directory Picker Widget
+    =======================
+    Shows a path-chooser dialog and persists the selected directory.
+    Used by the external quotes import menu.
+]]
 local UIManager = require("ui/uimanager")
 local PathChooser = require("ui/widget/pathchooser")
 local InfoMessage = require("ui/widget/infomessage")

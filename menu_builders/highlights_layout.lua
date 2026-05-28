@@ -70,7 +70,7 @@ local function buildMenuHighlightsLayoutOptions()
                 keep_menu_open = true,
                 callback = function(touchmenu_instance)
                     
-                    Spin{
+                    Spin.show{
                         title = _("Line spacing"),
                         value = config.read(keys.highlights.line_height) or 100,
                         min = 00,        -- 0.60
@@ -96,7 +96,7 @@ local function buildMenuHighlightsLayoutOptions()
                 keep_menu_open = true,
                 callback = function(touchmenu_instance)
                     
-                    Spin{
+                    Spin.show{
                         title = _("Quote Width Percentage"),
                         value = config.read(keys.highlights.width_percent) or 90,
                         min = 60,
@@ -121,7 +121,7 @@ local function buildMenuHighlightsLayoutOptions()
                 keep_menu_open = true,
                 callback = function(touchmenu_instance)
                     
-                    Spin{
+                    Spin.show{
                         title = _("Base Font Size"),
                         value = config.read(keys.highlights.font_size_base) or 48,
                         min = 24,
@@ -145,7 +145,7 @@ local function buildMenuHighlightsLayoutOptions()
                 keep_menu_open = true,
                 callback = function(touchmenu_instance)
                     
-                    Spin{
+                    Spin.show{
                         title = _("Minimum Font Size"),
                         value = config.read(keys.highlights.font_size_min) or 12,
                         min = 8,
@@ -168,7 +168,7 @@ local function buildMenuHighlightsLayoutOptions()
                 end,
                 keep_menu_open = true,
                 callback = function(touchmenu_instance)
-                    Spin{
+                    Spin.show{
                         title = _("Spacing between border and text"),
                         value = config.read(keys.highlights.border_spacing) or 24,
                         min = 0,

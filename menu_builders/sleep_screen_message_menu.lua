@@ -22,7 +22,7 @@ local function buildMenuPaddingMargin()
                 end,
                 keep_menu_open = true,
                 callback = function(touchmenu)
-                    Spin {
+                    Spin.show {
                         title = _("Padding"),
                         value = config.read(K.screensaver_message.layout.padding) or 2,
                         min = 0,
@@ -45,7 +45,7 @@ local function buildMenuPaddingMargin()
                 end,
                 keep_menu_open = true,
                 callback = function(touchmenu)
-                    Spin {
+                    Spin.show {
                         title = _("Margin"),
                         value = config.read(K.screensaver_message.layout.margin) or 4,
                         min = 0,
@@ -128,7 +128,7 @@ local function buildMenuLineSpacing()
         keep_menu_open = true,
         callback = function(touchmenu)
             local value = math.floor((config.read(K.screensaver_message.layout.line_spacing) or 0.4) * 100)
-            Spin {
+            Spin.show {
                 title = _("Line Spacing"),
                 value = value,
                 min = 0,      -- 0.0
@@ -155,7 +155,7 @@ local function buildMenuFontSize()
         end,
         keep_menu_open = true,
         callback = function(touchmenu)
-            Spin {
+            Spin.show {
                 title = _("Font Size"),
                 value = config.read(K.screensaver_message.layout.font_size) or 48,
                 min = 4,
@@ -329,7 +329,7 @@ local function buildMenuSleepScreenMessageOptions()
                                 config.write(key, value)
                             end
 
-                            Spin {
+                            Spin.show {
                                 value = value,
                                 min = 1,
                                 max = math.huge, -- UI freedom

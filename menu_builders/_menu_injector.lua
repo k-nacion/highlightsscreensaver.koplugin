@@ -1,4 +1,16 @@
--- lua
+--[[
+    Menu Injector
+    =============
+    Injects plugin menu items into KOReader's screensaver settings menu.
+    
+    KOReader loads screensaver_menu.lua via dofile(), and there is no official
+    plugin hook to add items to that specific submenu. We intercept dofile()
+    to inject our entries when that file is loaded.
+    
+    Called from main.lua init() — never executes at require() time.
+    Guarded against double-patching via the `patched` flag.
+]]
+
 local _ = require("gettext")
 
 local config = require("core.config")
@@ -12,10 +24,21 @@ local HIGHLIGHTS_MODE = "highlights"
 
 -------------------------------------------------------------------------
 -- PATCH `dofile` TO INJECT MENUS
+--
+-- NOTE: KOReader loads the screensaver settings menu via dofile().
+-- There is no official plugin hook to inject items into that specific
+-- submenu, so we intercept dofile() to add our menu entries.
+-- This is guarded against double-patching.
 -------------------------------------------------------------------------
 
+local patched = false
+local orig_dofile = nil
+
 local function patchDofileMenus()
-    local orig_dofile = dofile
+    if patched then return end
+    patched = true
+
+    orig_dofile = dofile
     _G.dofile = function(filepath)
         local result = orig_dofile(filepath)
 

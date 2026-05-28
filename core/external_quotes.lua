@@ -5,7 +5,7 @@ local clipper = require("core.clipper")
 local UIManager = require("ui/uimanager")
 local InfoMessage = require("ui/widget/infomessage")
 local ffiUtil = require("ffi/util")  -- for SHA-1
-local sha = require("dependency.sha2")
+local sha = require("vendor.sha2")
 
 local M = {}
 

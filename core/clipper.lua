@@ -92,6 +92,21 @@ function M.saveClipping(clipping)
 	file:close()
 end
 
+---@param clipping Clipping
+---@param filename string  The exact filename to write to (in clippings dir)
+function M.saveClippingAs(clipping, filename)
+	utils.makeDir(utils.getClippingsDir())
+	local path = utils.getClippingsDir() .. "/" .. filename
+	local file, err = io.open(path, "w")
+	if not file then
+		error("Error opening clippings file: " .. path .. ". Error: " .. tostring(err))
+	end
+
+	local content = json.encode(clipping, { indent = true })
+	file:write(content)
+	file:close()
+end
+
 ---@param filename string
 ---@return Clipping|nil
 function M.getClipping(filename)
@@ -153,6 +168,99 @@ function M.getRandomClipping()
 
 	local clipping = M.getClipping(chosenFile)
 	return clipping or fallback_clipping
+end
+
+---@return Clipping, string|nil  clipping and filename
+function M.getNextClipping()
+	local dir = utils.getClippingsDir()
+	utils.makeDir(dir)
+
+	-- Build sorted list of enabled clipping filenames
+	local enabled_files = {}
+	for file in lfs.dir(dir) do
+		if file:match("%.json$") then
+			local clipping = M.getClipping(file)
+			if clipping and clipping.enabled then
+				table.insert(enabled_files, file)
+			end
+		end
+	end
+
+	local fallback_clipping = M.Clipping.new(
+		"No highlights found. Ensure there there are valid scannable directories with books that contain highlights.",
+		nil,
+		"2025-11-12 00:19:09",
+		"Highlights Screensaver",
+		nil,
+		true
+	)
+
+	if #enabled_files == 0 then
+		return fallback_clipping, nil
+	end
+
+	-- Sort for deterministic order
+	table.sort(enabled_files)
+
+	-- Get current index from config (lazy-require to avoid circular dep)
+	local config = require("core.config")
+	local current_index = config.getSequentialIndex()
+
+	-- Advance to next position (wrapping around)
+	current_index = current_index + 1
+	if current_index > #enabled_files then
+		current_index = 1
+	end
+
+	-- Save the new position
+	config.setSequentialIndex(current_index)
+
+	local chosen_file = enabled_files[current_index]
+	local clipping = M.getClipping(chosen_file)
+	return clipping or fallback_clipping, chosen_file
+end
+
+---@return table<string, {files: string[], enabled_count: number, total: number}>
+function M.getCollections()
+	local dir = utils.getClippingsDir()
+	utils.makeDir(dir)
+	local collections = {}
+
+	for file in lfs.dir(dir) do
+		if file:match("%.json$") then
+			local clipping = M.getClipping(file)
+			if clipping and clipping.source_title then
+				local title = clipping.source_title
+				if not collections[title] then
+					collections[title] = { files = {}, enabled_count = 0, total = 0 }
+				end
+				table.insert(collections[title].files, file)
+				collections[title].total = collections[title].total + 1
+				if clipping.enabled then
+					collections[title].enabled_count = collections[title].enabled_count + 1
+				end
+			end
+		end
+	end
+
+	return collections
+end
+
+---@param source_title string
+---@param enabled boolean
+function M.setCollectionEnabled(source_title, enabled)
+	local dir = utils.getClippingsDir()
+	utils.makeDir(dir)
+
+	for file in lfs.dir(dir) do
+		if file:match("%.json$") then
+			local clipping = M.getClipping(file)
+			if clipping and clipping.source_title == source_title then
+				clipping.enabled = enabled
+				M.saveClippingAs(clipping, file)
+			end
+		end
+	end
 end
 
 ---@param hashId string

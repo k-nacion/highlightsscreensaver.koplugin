@@ -1,4 +1,9 @@
--- widgets/directory_scanner.lua
+--[[
+    Directory Scanner Widget
+    ========================
+    Scans a directory for .txt files and provides a summary popup.
+    Used by the external quotes import feature.
+]]
 local lfs = require("libs/libkoreader-lfs")
 local UIManager = require("ui/uimanager")
 local InfoMessage = require("ui/widget/infomessage")
