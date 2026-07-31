@@ -55,7 +55,17 @@ function M.extractClippingsFromSidecar(path)
 			break
 		end
 	end
-	local metadata = dofile(metadata_path)
+
+	-- No metadata file in this sidecar directory: nothing to extract.
+	if not metadata_path then
+		return {}
+	end
+
+	-- dofile may error or return nil/non-table on a corrupt or empty metadata file.
+	local ok, metadata = pcall(dofile, metadata_path)
+	if not ok or type(metadata) ~= "table" then
+		return {}
+	end
 
 	-- Safely read metadata.stats if it exists
 	local stats = metadata.stats or {}
